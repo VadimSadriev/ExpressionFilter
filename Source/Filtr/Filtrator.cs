@@ -28,8 +28,6 @@ namespace Filtr
         /// <param name="assembly">Assembly to get types from</param>
         public static void ConfigureFilters(Assembly assembly)
         {
-            _filterSettings = new Dictionary<string, FilterSetting>();
-
             // filter configuration type
             var filterBaseType = typeof(IFilterConfiguration<,>);
 
@@ -61,6 +59,14 @@ namespace Filtr
                 // Invoke Configure to setup filter settings
                 configureMethodInfo.Invoke(filter, new object[] { filterBuilder });
             }
+        }
+
+        /// <summary>
+        /// Clear setting dictionary
+        /// </summary>
+        public static void ClearSettings()
+        {
+            _filterSettings = new Dictionary<string, FilterSetting>();
         }
 
         #endregion

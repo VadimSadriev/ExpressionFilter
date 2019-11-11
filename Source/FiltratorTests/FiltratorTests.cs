@@ -24,6 +24,8 @@ namespace FiltratorTests
         [TestInitialize]
         public void Init()
         {
+            Filtrator.ClearSettings();
+
             // register filters
             Filtrator.ConfigureFilters(Assembly.GetExecutingAssembly());
 
