@@ -95,6 +95,32 @@ namespace FiltratorTests
             Assert.IsTrue(hasDianaJohn);
         }
 
+        [TestMethod]
+        public async Task SortTest()
+        {
+            var filterDto = new CharacterFilterDto
+            {
+
+            };
+
+            var pagedRequest = new PagedFilterRequest<CharacterFilterDto>
+            {
+                FilterDto = filterDto,
+                Sortings = new Sorting[]
+                {
+                    new Sorting
+                    {
+                        Name = "Name",
+                        Direction = Filtr.Enums.SortingDirection.Desc,
+                    }
+                }
+            };
+
+            var result = _context.Characters.Filter(pagedRequest);
+
+            var items = await result.ToListAsync();
+        }
+
         /// <summary>
         /// Test for getting elements in date time interval
         /// </summary>
@@ -353,15 +379,8 @@ namespace FiltratorTests
                 UniverseId = middleEarth.Id
             };
 
-            _context.Characters.Add(alex);
-            _context.Characters.Add(diana);
-            _context.Characters.Add(john);
-            _context.Characters.Add(deletedCharacter);
-            _context.Characters.Add(legolas);
-            _context.Characters.Add(aragorn);
-            _context.Characters.Add(frodo);
-            _context.Characters.Add(gendalf);
-
+            _context.Characters.AddRange(alex, diana, john, deletedCharacter, legolas,
+                aragorn, frodo, gendalf);
             _context.SaveChanges();
         }
     }

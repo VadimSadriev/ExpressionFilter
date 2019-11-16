@@ -86,8 +86,7 @@ namespace Filtr
             {
                 // ensure we configured setting for property
                 if (!_filterSettings.ContainsKey(filter.Name))
-                    throw new FilterSettingNotFoundException($"Configuration" +
-                        $" for property {filter.Name} does not present in dictionary");
+                    throw new FilterSettingNotFoundException(filter.Name);
 
                 var propertyFilterSetting = _filterSettings[filter.Name];
 
@@ -95,29 +94,29 @@ namespace Filtr
             }
 
             // apply sortings
-            var firstSorting = filterData.Sortings[0];
+            var sortings = filterData.Sortings.OrderBy(x => x.Priority).ToArray();
+
+            var firstSorting = sortings[0];
 
             // ensure we configured setting for property
             if (!_filterSettings.ContainsKey(firstSorting.Name))
-                throw new FilterSettingNotFoundException($"Configuration" +
-                    $" for property {firstSorting.Name} does not present in dictionary");
+                throw new FilterSettingNotFoundException(firstSorting.Name);
 
-            var propertySetting = _filterSettings[filterData.Sortings[0].Name];
+            var propertySetting = _filterSettings[sortings[0].Name];
 
-            var sortedQuery = ApplySorting(query, propertySetting);
+            var sortedQuery = ApplySorting(query, firstSorting, propertySetting);
 
-            for (var i = 1; i < filterData.Sortings.Count; i++)
+            for (var i = 1; i < filterData.Sortings.Length; i++)
             {
-                var sorting = filterData.Sortings[i];
+                var sorting = sortings[i];
 
                 // ensure we configured setting for property
                 if (!_filterSettings.ContainsKey(sorting.Name))
-                    throw new FilterSettingNotFoundException($"Configuration" +
-                        $" for property {sorting.Name} does not present in dictionary");
+                    throw new FilterSettingNotFoundException(sorting.Name);
 
                 propertySetting = _filterSettings[sorting.Name];
 
-                sortedQuery = ApplyNextSorting(sortedQuery, propertySetting);
+                sortedQuery = ApplyNextSorting(sortedQuery, sorting, propertySetting);
             }
 
             return sortedQuery;
@@ -148,13 +147,12 @@ namespace Filtr
             // then make condition for all
             if (!filterSetting.IsSingleFilter)
             {
-                for (var i = 1; i < filter.Values.Count; i++)
+                for (var i = 1; i < filter.Values.Length; i++)
                 {
                     var nextConstantExpression = GetConstantExpression(filterSetting.ParameterType, filter.Values[i]);
                     condition = GetNextMethodExpression(condition, filterSetting, propertyAccess, nextConstantExpression);
                 }
             }
-
 
             var lambda = Expression.Lambda<Func<T, bool>>(condition, lambdaParameter);
 
@@ -167,7 +165,7 @@ namespace Filtr
         /// <typeparam name="T">Type of sorted object</typeparam>
         /// <param name="query">Query to apply sorting to</param>
         /// <param name="filterSetting">Filter settings for sorting by passed property</param>
-        private static IOrderedQueryable<T> ApplySorting<T>(IQueryable<T> query, FilterSetting filterSetting)
+        private static IOrderedQueryable<T> ApplySorting<T>(IQueryable<T> query, Sorting sorting, FilterSetting filterSetting)
         {
             // parameter for lambda expression
             var lambdaParameter = Expression.Parameter(typeof(T), "p");
@@ -175,10 +173,10 @@ namespace Filtr
             // building path to the property (x => x.Property.AnotherProperty)
             var propertyAccess = GetPropertyAccess(lambdaParameter, filterSetting.PropertyPath);
 
-            if (filterSetting.SortingDirection == SortingDirection.Asc)
+            if (sorting.Direction == SortingDirection.Asc)
                 return CallSortingMethod(query, "OrderBy", filterSetting.ParameterType, propertyAccess, lambdaParameter);
 
-            if (filterSetting.SortingDirection == SortingDirection.Desc)
+            if (sorting.Direction == SortingDirection.Desc)
                 return CallSortingMethod(query, "OrderByDescending", filterSetting.ParameterType, propertyAccess, lambdaParameter);
 
             return (IOrderedQueryable<T>)query;
@@ -191,7 +189,7 @@ namespace Filtr
         /// <param name="query">Query to apply sorting to</param>
         /// <param name="filterSetting">Filter settings for sorting by passed property</param>
         /// <returns></returns>
-        private static IOrderedQueryable<T> ApplyNextSorting<T>(IOrderedQueryable<T> query, FilterSetting filterSetting)
+        private static IOrderedQueryable<T> ApplyNextSorting<T>(IOrderedQueryable<T> query, Sorting sorting, FilterSetting filterSetting)
         {
             // parameter for lambda expression
             var lambdaParameter = Expression.Parameter(typeof(T), "p");
@@ -199,10 +197,10 @@ namespace Filtr
             // building path to the property (x => x.Property.AnotherProperty)
             var propertyAccess = GetPropertyAccess(lambdaParameter, filterSetting.PropertyPath);
 
-            if (filterSetting.SortingDirection == SortingDirection.Asc)
+            if (sorting.Direction == SortingDirection.Asc)
                 return CallSortingMethod(query, "ThenBy", filterSetting.ParameterType, propertyAccess, lambdaParameter);
 
-            if (filterSetting.SortingDirection == SortingDirection.Desc)
+            if (sorting.Direction == SortingDirection.Desc)
                 return CallSortingMethod(query, "ThenByDescending", filterSetting.ParameterType, propertyAccess, lambdaParameter);
 
             return query;

@@ -9,6 +9,6 @@ namespace Filtr.Models.Base
         public TFilterDto FilterDto { get; set; }
 
         /// <summary> Sortings </summary>
-        public List<Sorting> Sortings { get; set; } = new List<Sorting>();
+        public Sorting[] Sortings { get; set; } = new Sorting[0];
     }
 }

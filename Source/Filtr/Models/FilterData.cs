@@ -6,9 +6,9 @@ namespace Filtr.Models
     public class FilterData
     {
         /// <summary> List of filters to apply to query </summary>
-        public List<Filter> Filters { get; set; } = new List<Filter>();
+        public Filter[] Filters { get; set; } = new Filter[0];
 
         /// <summary> List of sortings to apply to query </summary>
-        public List<Sorting> Sortings { get; set; } = new List<Sorting>();
+        public Sorting[] Sortings { get; set; } = new Sorting[0];
     }
 }

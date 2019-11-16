@@ -8,6 +8,7 @@
         /// <summary>
         /// Exception thrown when setting does not present in filtrator dictionary
         /// </summary>
-        public FilterSettingNotFoundException(string message) : base(message) { }
+        public FilterSettingNotFoundException(string settingName) : base($"Configuration" +
+                        $" for property {settingName} does not present in dictionary") { }
     }
 }

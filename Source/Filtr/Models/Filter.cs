@@ -9,6 +9,6 @@ namespace Filtr.Models
         public string Name { get; set; }
 
         /// <summary> Values for property </summary>
-        public List<string> Values { get; set; } = new List<string>();
+        public string[] Values { get; set; } = new string[0];
     }
 }

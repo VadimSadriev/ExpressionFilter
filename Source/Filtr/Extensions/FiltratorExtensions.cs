@@ -36,7 +36,7 @@ namespace Filtr.Extensions
         /// <summary>
         /// Return properties and values from dto
         /// </summary>
-        private static List<Filter> GetFiltersFromDto<TDto>(TDto dto)
+        private static Filter[] GetFiltersFromDto<TDto>(TDto dto)
         {
             var filterDtoTypeFullName = dto.GetType().FullName;
 
@@ -50,32 +50,32 @@ namespace Filtr.Extensions
                   .Where(x => x.Value != null)
                   .Select(x =>
                   {
-                      var values = new List<string>();
+                      var values = new string[0];
 
                       // if collection of values convert it to list of strings
                       // otherwise just create new list with one value
                       if (x.Value is ICollection)
-                          values = ((ICollection)x.Value).Cast<object>().Select(o => o.ToString()).ToList();
+                          values = ((ICollection)x.Value).Cast<object>().Select(o => o.ToString()).ToArray();
                       else
-                          values = new List<string> { x.Value.ToString() };
+                          values = new string[] { x.Value.ToString() };
 
                       return new Filter
                       {
                           Name = $"{filterDtoTypeFullName}.{x.Name}",
                           Values = values
                       };
-                  }).ToList();
+                  }).ToArray();
         }
 
         /// <summary>
         /// Prepares sorting list for internal filters
         /// </summary>
-        private static List<Sorting> GetSortingsFromRequest<TDto>(List<Sorting> sortings)
+        private static Sorting[] GetSortingsFromRequest<TDto>(Sorting[] sortings)
         {
             var filterDtoTypeFullName = typeof(TDto).FullName;
 
-            if (sortings.Count == 0)
-                return new List<Sorting>
+            if (sortings.Length == 0)
+                return new Sorting[1]
                 {
                     new Sorting
                     {
@@ -90,7 +90,7 @@ namespace Filtr.Extensions
                     Name = $"{filterDtoTypeFullName}.{x.Name}",
                     Direction = x.Direction,
                     Priority = x.Priority
-                }).ToList();
+                }).ToArray();
         }
     }
 }
